@@ -1,0 +1,19 @@
+# Backend
+fastapi
+uvicorn
+
+# Frontend
+streamlit
+requests
+
+# AI / NLP
+transformers
+torch
+
+# Data handling
+pandas
+matplotlib
+
+# Optional (for LLM pipelines and summarization)
+scikit-learn
+sentencepiece
