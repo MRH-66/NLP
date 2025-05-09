@@ -1,30 +1,17 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from backend.llm_module import analyze_performance
 from backend.db import store_transaction, get_all_transactions
-from pydantic import BaseModel
+import os
 
 # Define the Transaction model
-
-
 class Transaction(BaseModel):
     amount: float
     category: str
     date: str
     purpose: str
 
-
 app = FastAPI()
-
-# Enable CORS so frontend can access backend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # In production, replace "*" with your Streamlit URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 
 @app.post("/add_transaction/")
 async def add_transaction(transaction: Transaction):
@@ -33,7 +20,20 @@ async def add_transaction(transaction: Transaction):
     analysis = analyze_performance(data)
     return {"status": "stored", "analysis": analysis}
 
-
 @app.get("/transactions/")
 async def fetch_all():
     return get_all_transactions()
+
+# Vercel requires an ASGI handler
+from fastapi import FastAPI
+from fastapi.middleware.wsgi import WSGIMiddleware
+import sys
+
+sys.stdout = sys.stderr  # Ensure Vercel outputs errors to the console
+
+app.add_middleware(WSGIMiddleware)
+
+# For Vercel to work, you may need to bind the FastAPI app to a wsgi callable.
+if __name__ == "__main__":
+    import os
+    os.environ["PORT"] = str(os.environ.get("PORT", 8080))  # Ensure PORT is set for Vercel
